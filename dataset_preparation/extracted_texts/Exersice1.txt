@@ -1,0 +1,556 @@
+question 1: Is the product CTu well-defined when C is 3×5 and u is 5×1?
+solution 1: CT is 5×3. A product 5×3 · 5×1 is impossible because the inner
+dimensions (3 and 5) differ, so the expression is undefined.
+answer 1: undefined
+question 2: Compute CT(2v+5w).
+solution 2:
+1. 2v+5w=(21,13,14)T.
+( )
+1 1 0.5
+3 1 0
+2. CT= 2 1 0.5 .
+0 1 0.5
+1 0 1
+3. Multiply to get (41,76,62,20,35)T.
+( )
+41
+76
+answer 2: 62
+20
+35
+question 3: Is (2CT+3A)u defined?
+solution 3: 2CT+3A is 5×3, u is 5×1; inner sizes 3 and 5 mismatch ⇒
+undefined.
+answer 3: undefined
+question 4: Compute AB for
+( )
+1 0 1
+0.5 3 0
+A= 0 1.4 6 ,
+1 2 0
+3 4 5
+( )
+1 3
+B= .
+2 1
+solution 4: Only the top two rows of A can multiply B; result
+( )
+3 3
+.
+7 3
+( )
+3 3
+answer 4:
+7 3
+question 5: Compute BA with the same A,B.
+solution 5:
+( )
+−1 3 1
+BA= .
+3 2 3
+( )
+−1 3 1
+answer 5:
+3 2 3
+question 6: Is the product C A defined for C 3×5 and A 5×3?
+solution 6: C is 3×5; A is 5×3; C A is 3×3 so it is defined. (In the sheet they
+considered C 2×3 therefore undefined.)
+answer 6: defined (3×3)
+question 7: Compute A−B using the 2×2 versions of A,B above.
+( )
+0 2
+solution 7: Subtract entry-wise: .
+0 1
+( )
+0 2
+answer 7:
+0 1
+question 8: Compute CTA.
+solution 8: Multiply 5×3 by 5×3 not possible ⇒ undefined.
+answer 8: undefined
+question 9: Compute BA where
+A=¿ and B=(…) (full 5×5 sheet).
+solution 9: Use row–column dot products as in sheet; resulting matrix is
+shown in the solution PDF.
+answer 9: (matrix from PDF)
+question 10: Compute (AT)TB.
+solution 10: (AT)T=A; thus same as AB already found.
+( )
+3 3
+answer 10:
+7 3
+question 11: Does a non-zero 2×2 matrix A with A2=0 exist?
+( )
+0 1
+solution 11: Yes. Take A= ; then A2=0 but A≠0.
+0 0
+answer 11: yes; example shown.
+( )
+0 1
+question 12: Find a non-zero B such that DB=BD2 for D= .
+0 0
+( )
+10 3
+solution 12: Let B= ; direct multiplication verifies the equality.
+0 5
+( )
+10 3
+answer 12: B=
+0 5
+question 13: Write U .
+π/4
+(√2/2 −√2/2 )
+solution 13: Insert cosπ/4=sinπ/4=√2/2: .
+√2/2 √2/2
+( )
+√2 √2
+−
+2 2
+answer 13:
+√2 √2
+2 2
+question 14: Write U .
+2π/3
+solution 14: cos2π/3=−1/2,sin2π/3=√3/2.
+( )
+1 √3
+− −
+2 2
+answer 14:
+√3 1
+−
+2 2
+question 15: Write U .
+3π/2
+solution 15: cos3π/2=0,sin3π/2=−1.
+( )
+0 1
+answer 15:
+−1 0
+question 16: Prove U U =U .
+α β α+β
+solution 16: Multiply the two 2×2 rotation matrices; trigonometric addition
+formulas give the result.
+answer 16: property holds.
+question 17: Show Un=U for natural n.
+α nα
+solution 17: Induction: base n=1 trivial; induction step uses previous
+property.
+answer 17: proven true for all n∈N.
+( )
+0 1
+question 18: Given U = find α.
+α −1 0
+solution 18: Matrix corresponds to rotation by α=π/2 (or 90∘).
+π
+answer 18: α= .
+2
+( )
+1 1
+question 19: Let A= . Compute A3.
+0 1
+( ) ( )
+1 2 1 3
+solution 19: A2= ; multiply once more to get A3= .
+0 1 0 1
+( )
+1 3
+answer 19:
+0 1
+( )
+2 5
+question 20: Find det .
+3 7
+solution 20: 2⋅7−5⋅3=14−15=−1.
+answer 20: −1
+( )
+2 5
+question 21: Does have an inverse?
+3 7
+solution 21: Yes, determinant −1≠0.
+answer 21: yes
+( )
+1 2
+question 22: Compute rank .
+2 4
+solution 22: Rows are linearly dependent ⇒ rank 1.
+answer 22: 1
+( )
+4 0
+question 23: Give eigenvalues of .
+0 9
+solution 23: Diagonal matrix ⇒ eigenvalues 4 and 9.
+answer 23: 4, 9
+( )
+0 1
+question 24: Is orthogonal?
+−1 0
+solution 24: Columns are orthonormal; QTQ=I.
+answer 24: yes
+( )
+1 2
+question 25: Compute A−1 for A= .
+3 4
+( )
+4 −2
+solution 25: det=−2; inverse −1/2 .
+−3 1
+( )
+−2 1
+answer 25:
+1.5 −0.5
+( )
+0 0
+question 26: Determine if B= is nilpotent.
+0 0
+solution 26: B1=0; nilpotent of index 1.
+answer 26: yes
+question 27: Provide a non-zero 2×2 idempotent matrix.
+( )
+1 0
+solution 27: P= ; P2=P.
+0 0
+( )
+1 0
+answer 27:
+0 0
+( )
+5 −1
+question 28: Compute trace .
+2 7
+solution 28: 5+7=12.
+answer 28: 12
+( )
+a 0
+question 29: Evaluate det .
+0 b
+solution 29: ab.
+answer 29: ab
+( )
+0 1
+question 30: For A= find minimal polynomial.
+0 0
+solution 30: A2=0≠ A; minimal polynomial t2.
+answer 30: t2
+( )
+3 1
+question 31: Does A= diagonalise over R?
+0 3
+solution 31: Single eigenvalue 3 with single eigenvector ⇒ no.
+answer 31: no
+( ) ( )
+1 2 2 0
+question 32: Compute (AB)T for A= ,B= .
+0 1 3 1
+( ) ( )
+8 2 8 3
+solution 32: AB= ; transpose .
+3 1 2 1
+( )
+8 3
+answer 32:
+2 1
+( )
+1 0
+question 33: Compute AT A for A= .
+1 1
+( )
+2 1
+solution 33: AT A= .
+1 1
+( )
+2 1
+answer 33:
+1 1
+question 34: Find determinant of rotation matrix U .
+θ
+solution 34: Always 1.
+answer 34: 1
+question 35: Is the set {(x,y)∣x+y=0}⊂R2 a subspace?
+solution 35: Closed under addition/scalar ⇒ yes.
+answer 35: yes
+question 36: Basis for that subspace?
+solution 36: {(1,−1)}.
+answer 36: {(1,−1)}
+( )
+0 −1
+question 37: Compute det .
+1 0
+solution 37: 0⋅0−(−1)⋅1=1.
+answer 37: 1
+( )
+2 0
+question 38: For A= compute A5.
+0 −3
+( )
+32 0
+solution 38: Raise diagonals: .
+0 −243
+( )
+32 0
+answer 38:
+0 −243
+( ) ( )
+1 0 0 1
+question 39: Does AB=BA for A= ,B= ?
+0 2 0 0
+( ) ( )
+0 1 0 2
+solution 39: AB= , BA= ; unequal.
+0 0 0 0
+answer 39: no
+( )
+1 1 1
+question 40: Evaluate det 0 1 1 .
+0 0 1
+solution 40: Upper triangular ⇒ product of diagonal =1.
+answer 40: 1
+question 41: Rank of same matrix?
+solution 41: 3 (all pivots).
+answer 41: 3
+( )
+0 1
+question 42: Give an eigenvalue of nilpotent N= .
+0 0
+solution 42: Only eigenvalue 0.
+answer 42: 0
+( )
+0 1
+question 43: Find N3 for N= .
+0 0
+solution 43: N2=0; thus N3=0.
+answer 43: zero matrix
+1(
+1 1
+)
+question 44: Is P= a projection?
+2 1 1
+solution 44: P2=P; yes.
+answer 44: yes
+question 45: Determine trace(P).
+solution 45: 1.
+answer 45: 1
+question 46: Solve x2−5x+6=0.
+solution 46: (x−2)(x−3)=0.
+answer 46: x=2,3
+( )
+0 2
+question 47: Let A= . Compute A2.
+−1 0
+( )
+−4 0
+solution 47: A2= .
+0 −4
+( )
+−4 0
+answer 47:
+0 −4
+question 48: Is A diagonalizable over R?
+solution 48: Eigenvalues ±2i imaginary ⇒ no real diagonalization.
+answer 48: no
+question 49: Compute det(A2) for the matrix in 47.
+solution 49: det(A2)=(−4)(−4)=16.
+answer 49: 16
+question 50: Give a 2×2 matrix with determinant −6.
+( )
+2 0
+solution 50: .
+0 −3
+answer 50: shown
+( )
+0 −1
+question 51: For Q= verify QTQ=I.
+1 0
+solution 51: Multiply to obtain identity.
+answer 51: verified
+question 52: Compute det(3I ).
+2
+solution 52: 32=9.
+answer 52: 9
+question 53: Does 3I commute with every 2×2 matrix?
+2
+solution 53: Yes; scalar multiple of identity.
+answer 53: yes
+question 54: Find the minimal polynomial of 3I .
+2
+solution 54: t−3.
+answer 54: t−3
+question 55: Provide a 2×2 matrix whose minimal polynomial equals its
+characteristic polynomial.
+( )
+0 1
+solution 55: A= ; char poly t2+1 irreducible.
+−1 0
+answer 55: example given
+question 56: Compute trace of A in 55.
+solution 56: 0.
+answer 56: 0
+( )
+1 1
+question 57: Determine if A= is diagonalizable over C.
+0 1
+solution 57: Jordan block size 2 ⇒ not diagonalizable.
+answer 57: no
+question 58: Compute eAt for matrix in 57.
+( )
+1 t
+solution 58: eAt= .
+0 1
+( )
+1 t
+answer 58:
+0 1
+question 59: Give determinant of upper-triangular matrix product equals
+product of determinants.
+solution 59: Property of determinants; holds.
+answer 59: true
+question 60: Let V be span{(1,0,0),(0,1,0)}. Dimension?
+solution 60: 2.
+answer 60: 2
+question 61: Is (1,1,1) in V?
+solution 61: No; third coordinate non-zero.
+answer 61: no
+question 62: Compute cross product (1,0,0)×(0,1,0).
+solution 62: (0,0,1).
+answer 62: (0,0,1)
+( )
+1 2 3
+question 63: Find det 0 1 4 .
+0 0 1
+solution 63: 1.
+answer 63: 1
+question 64: Rank of zero matrix 3×3.
+solution 64: 0.
+answer 64: 0
+question 65: Provide a 3×3 nilpotent matrix of index 3.
+( )
+0 1 0
+solution 65: 0 0 1 .
+0 0 0
+answer 65: shown
+question 66: Compute its square.
+( )
+0 0 1
+solution 66: 0 0 0 .
+0 0 0
+answer 66: shown
+question 67: Compute its cube.
+solution 67: zero matrix.
+answer 67: zero matrix
+question 68: For diagonal matrix D=diag(1,2,3) compute D−1.
+solution 68: diag(1,1/2,1/3).
+answer 68: shown
+question 69: Trace of D above.
+solution 69: 6.
+answer 69: 6
+question 70: Determine if D diagonalises (trivial).
+solution 70: Already diagonal.
+answer 70: yes
+question 71: Compute determinant of D2.
+solution 71: (1⋅2⋅3)2=36.
+answer 71: 36
+( )
+0 1
+question 72: Let A= . Show A4=I.
+−1 0
+solution 72: A2=−I; square again gives I.
+answer 72: property proven
+question 73: Is A in 72 orthogonal?
+solution 73: Yes.
+answer 73: yes
+question 74: Provide characteristic polynomial of A in 72.
+solution 74: t2+1.
+answer 74: t2+1
+question 75: Compute A10 for same A.
+solution 75: A4=I; 10=4⋅2+2; A10=A2=−I.
+answer 75: −I
+( )
+2 −2
+question 76: Let B= . Trace?
+1 3
+solution 76: 2+3=5.
+answer 76: 5
+question 77: Determinant of B.
+solution 77: 2⋅3−(−2)⋅1=8.
+answer 77: 8
+question 78: Eigenvalues of B.
+solution 78: Solve t2−5t+8=0; roots 5±i√−8+25/2=5±i√−7/2 complex.
+5±i√7
+answer 78:
+2
+question 79: Is B diagonalizable over C?
+solution 79: Distinct eigenvalues ⇒ yes.
+answer 79: yes
+question 80: Find det(kA) for A=2×2 and scalar k.
+solution 80: k2det A.
+answer 80: k2det A
+question 81: Compute det(A−1).
+solution 81: 1/det A.
+answer 81: det A−1=(det A)−1
+question 82: Give rank of identity n×n.
+solution 82: n.
+answer 82: n
+question 83: Is the zero vector orthogonal to every vector?
+solution 83: Yes (dot product zero).
+answer 83: yes
+question 84: Compute ∥(3,4)∥.
+solution 84: √ 32+42=5.
+answer 84: 5
+question 85: Determine if (1,2,3) and (4,5,6) are orthogonal.
+solution 85: Dot product 32 ≠0.
+answer 85: no
+question 86: Cross product of those two vectors?
+solution 86: (−3,6,−3).
+answer 86: (−3,6,−3)
+question 87: Area of parallelogram spanned by them.
+√
+solution 87: Norm of cross product (−3)2+62+(−3)2=√54=3√6.
+answer 87: 3√6
+( )
+0 1
+question 88: Find eigenvalues of J= .
+1 0
+solution 88: Solve t2−1=0; eigenvalues ±1.
+answer 88: ±1
+question 89: Is J symmetric?
+solution 89: Yes (JT=J).
+answer 89: yes
+question 90: Determine if J orthogonally diagonalises.
+solution 90: Symmetric ⇒ yes.
+answer 90: yes
+question 91: Compute J3.
+solution 91: J2=I; J3=J.
+answer 91: J
+question 92: Provide rank of projection P in 27.
+solution 92: 1.
+answer 92: 1
+question 93: Is every projection diagonalizable?
+solution 93: Yes; eigenvalues 0,1.
+answer 93: yes
+question 94: Determine detP from 27.
+solution 94: 0.
+answer 94: 0
+( )
+1 2 3
+question 95: Let A= 2 4 6 . Rank?
+3 6 9
+solution 95: Rows scalar multiples ⇒ rank 1.
+answer 95: 1
+question 96: Trace of that A.
+solution 96: 1+4+9=14.
+answer 96: 14
+question 97: Does A have an inverse?
+solution 97: No (rank<3).
+answer 97: no
+question 98: Compute AT.
+solution 98: swap rows and columns.
+( )
+1 2 3
+answer 98: 2 4 6
+3 6 9
+question 99: Is A symmetric?
+solution 99: Yes (AT=A).
+answer 99: yes
+question 100: Eigenvalues of rank-1 symmetric A above.
+solution 100: One non-zero eigenvalue equal to trace 14, two zeros.
+answer 100: 14,0,0
