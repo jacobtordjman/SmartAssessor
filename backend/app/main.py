@@ -1,14 +1,9 @@
 # backend/app/main.py
 
 import os
-import torch
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import (
-    T5ForConditionalGeneration,
-    T5TokenizerFast,
-    Text2TextGenerationPipeline
-)
+from fastapi import FastAPI, HTTPException, UploadFile, File
 
 app = FastAPI()
 
@@ -20,24 +15,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# ─── Load Your Fine-Tuned Agent-1 Model & Tokenizer ─────────────────────────────
-MODEL_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "training", "agent1_model")
-)
-
-# Load tokenizer & model from local directory only
-tokenizer = T5TokenizerFast.from_pretrained(MODEL_DIR, local_files_only=True)
-model     = T5ForConditionalGeneration.from_pretrained(MODEL_DIR, local_files_only=True)
-
-# Create a pipeline for text2text-generation
-device = 0 if torch.cuda.is_available() else -1
-agent1 = Text2TextGenerationPipeline(
-    model=model,
-    tokenizer=tokenizer,
-    device=device
-)
-
 # ─── Health Check ───────────────────────────────────────────────────────────────
 @app.get("/")
 def read_root():
@@ -54,6 +31,25 @@ def evaluate(payload: dict):
     if not prompt:
         raise HTTPException(status_code=400, detail="Missing 'input' field")
 
-    # Run the pipeline
-    outputs = agent1(prompt, max_length=64, num_return_sequences=1)
-    return {"evaluation": outputs[0]["generated_text"]}
+@app.post("/upload/assessment")
+async def upload_assessment(file: UploadFile = File(...)):
+    # optional: enforce PDF only
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files allowed.")
+
+    # ensure uploads dir exists
+    upload_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "uploads")
+    )
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # write the file to disk
+    file_path = os.path.join(upload_dir, file.filename)
+    with open(file_path, "wb") as f:
+        contents = await file.read()
+        f.write(contents)
+
+    # TODO: here’s where you’d extract text, run your model, etc.
+    extracted_text = "Placeholder: implement your PDF-to-text logic"
+
+    return {"extracted_text": extracted_text}

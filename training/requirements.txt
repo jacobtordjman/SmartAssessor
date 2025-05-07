@@ -1,5 +1,0 @@
-# training/requirements.txt
-
-transformers>=4.30.0
-datasets>=2.13.0
-torch>=1.13.0
