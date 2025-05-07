@@ -1,2 +1,1 @@
-training/agent1_model/** filter=lfs diff=lfs merge=lfs -text
 * !text !filter !merge !diff
