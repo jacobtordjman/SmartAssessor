@@ -17,11 +17,16 @@ export default function FileUploadAssessment() {
       const response = await axios.post("http://127.0.0.1:8000/upload/assessment", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      if (response.data.extracted_text) {
-        setFeedback(response.data.extracted_text);
+      const { assessments } = response.data;
+      if (assessments && assessments.length > 0) {
+        // Turn the array of objects into a readable string:
+        const lines = assessments.map(a =>
+          `${a.text} → ${a.is_correct ? "✅ true" : "❌ false"}`
+        );
+        setFeedback(lines.join("\n"));
         setErrorMessage("");
       } else {
-        setErrorMessage("Text extraction failed.");
+        setErrorMessage("No equations found or extraction failed.");
       }
     } catch (error) {
       console.error("Upload error:", error);
