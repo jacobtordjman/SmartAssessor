@@ -1,4 +1,6 @@
+backend:
 source env/Scripts/activate
 uvicorn app.main:app --reload
 
+fronfend:
 npm run dev
