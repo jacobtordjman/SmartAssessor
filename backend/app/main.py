@@ -46,23 +46,56 @@ def assess_pdf_bytes(data: bytes) -> List[Dict]:
     """
     reader = PyPDF2.PdfReader(BytesIO(data))
     full_text = "".join(page.extract_text() or "" for page in reader.pages)
-
-    pattern = re.compile(
-        r'(\d+)\s*(plus|\+|minus|\-)\s*(\d+)\s*(?:equals|=)\s*(\d+)',
-        flags=re.IGNORECASE
+    # ── normalize unicode operators to ASCII ────────────────────────────────
+    full_text = (
+        full_text
+        .replace('−', '-')   # unicode minus → hyphen-minus
+        .replace('×', '*')   # multiplication sign → asterisk
+        .replace('÷', '/')   # division sign → slash
     )
+
+    # match +, -, *, /, ×, ÷  (we escape * in the class)
+    pattern = re.compile(
+        r'\(?\s*(-?\d+)\s*\)?'  # optional parens/spaces around first number
+        r'\s*([+\-*/])\s*'      # operator
+        r'\(?\s*(-?\d+)\s*\)?'  # optional parens/spaces around second number
+        r'\s*=\s*'
+        r'\(?\s*(-?\d+)\s*\)?'  # optional parens/spaces around result
+    )
+
 
     assessments = []
     for a_str, op_str, b_str, c_str in pattern.findall(full_text):
-        a, b, c = int(a_str), int(b_str), int(c_str)
-        op = 'plus' if op_str.lower() in ('plus', '+') else 'minus'
-        expected = a + b if op == 'plus' else a - b
-        is_correct = (expected == c)
-        text = f"{a} {op_str} {b} = {c}"
+        a, b = int(a_str), int(b_str)
+        # always parse the RHS; override for division if needed
+        c = int(c_str)
+        if op_str == '+':
+            expected = a + b
+            op_key = 'plus'
+        elif op_str == '-':
+            expected = a - b
+            op_key = 'minus'
+        elif op_str == '*':
+            expected = a * b
+            op_key = 'multiply'
+        elif op_str == '/':
+            expected = None if b == 0 else a / b
+            c = float(c_str)       # re-parse as float for division checks
+            op_key = 'divide'
+        else:
+            expected = None
+            op_key = 'unknown'
+        
+        # ── determine correctness ───────────────────────────────────
+        if isinstance(expected, float):
+            is_correct = abs(expected - c) < 1e-9
+        else:
+            is_correct = (expected == c)
+
         assessments.append({
-            "text": text,
+            "text": f"{a} {op_str} {b} = {c_str}",
             "left": a,
-            "op": op,
+            "op": op_key,
             "right": b,
             "result": c,
             "is_correct": is_correct
