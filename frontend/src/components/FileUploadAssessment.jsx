@@ -68,7 +68,9 @@ export default function FileUploadAssessment() {
       {feedback && (
         <div className="mt-4 p-4 bg-gray-100 rounded shadow">
           <h3 className="font-bold mb-2">Extracted Text:</h3>
-          <p className="text-gray-700">{feedback}</p>
+          <pre className="text-gray-700 whitespace-pre-wrap">
+          {feedback}
+          </pre>       
         </div>
       )}
       {errorMessage && (
