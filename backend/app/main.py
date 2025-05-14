@@ -6,6 +6,7 @@ import PyPDF2
 import unicodedata
 from io import BytesIO
 from typing import List, Dict
+from sympy import symbols, Eq, solve
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -41,57 +42,88 @@ def evaluate(payload: dict):
 # ─── PDF Assessment Helpers ─────────────────────────────────────────────────────
 def assess_pdf_bytes(data: bytes) -> Dict:
     """
-    Extracts text from PDF bytes and finds all arithmetic equations
-    of any length on the LHS (e.g. 5+8-4=9), preserving original text.
+    Parses PDF text for:
+      1) simple arithmetic lines (any-length LHS = RHS)
+      2) single-variable linear equations with provided answer (e.g. "2x+7=15, x=4")
     Returns a dict with:
-      - "assessments": list of { text, expression, result, is_correct }
-      - "formatted":   newline-separated display string
+      - assessments: list of detail dicts
+      - formatted: newline-separated feedback strings
     """
-    # 1) extract all text
+    # ── 1) Extract & normalize text ───────────────────────────────
     reader = PyPDF2.PdfReader(BytesIO(data))
     full_text = "".join(page.extract_text() or "" for page in reader.pages)
-
-    # 2) normalize to ASCII (operators, dashes, compatibility forms)
     full_text = unicodedata.normalize("NFKC", full_text)
-    for dash in ["−", "–", "—", "‒"]:
+    for dash in ["−","–","—","‒"]:
         full_text = full_text.replace(dash, "-")
-    full_text = full_text.replace("×", "*").replace("÷", "/")
-
-    # 3) regex: group1 = entire LHS expr, group2 = RHS integer
-    pattern = re.compile(r'([\d+\-*/()\s]+)\s*=\s*(-?\d+)')
+    full_text = full_text.replace("×","*").replace("÷","/")
 
     assessments: List[Dict] = []
-    lines: List[str]     = []
+    lines:       List[str]  = []
 
-    for m in pattern.finditer(full_text):
-        orig_eq = m.group(0).strip()  # e.g. "(5+8-4)=9"
-        lhs_str = m.group(1)          # e.g. "5+8-4"
-        c_str   = m.group(2)          # e.g. "9"
+    # ── 2) Linear-with-solution pattern ───────────────────────────
+    # matches "2x+7=15, x=4" capturing [coeff, var, const, rhs, provided]
+    pat_lin = re.compile(
+        r'(-?\d*)\s*([a-zA-Z])\s*([+\-]\s*\d+)\s*=\s*(-?\d+)'
+        r'\s*,\s*\2\s*=\s*(-?\d+)'
+    )
+    for coeff_str, var, const_str, rhs_str, sol_str in pat_lin.findall(full_text):
+        # normalize pieces
+        coeff = int(coeff_str) if coeff_str not in ("", "+", "-") else int(f"{coeff_str}1")
+        const = int(const_str.replace(" ", ""))
+        rhs   = int(rhs_str)
+        provided = int(sol_str)
 
-        # parse RHS
-        c = int(c_str)
+        # solve via sympy
+        x = symbols(var)
+        equation = Eq(coeff * x + const, rhs)
+        true_sol = solve(equation, x)[0]
+        is_correct = (true_sol == provided)
 
-        # safely evaluate LHS (only +,-,*,/ expected)
+        orig = f"{coeff_str}{var}{const_str} = {rhs_str}, {var} = {sol_str}"
+        assessments.append({
+            "text":       orig,
+            "type":       "linear",
+            "equation":   f"{coeff_str}{var}{const_str} = {rhs_str}",
+            "provided":   provided,
+            "expected":   int(true_sol),
+            "is_correct": is_correct
+        })
+        mark = "✅" if is_correct else "❌"
+        lines.append(f"{orig} → {mark} {is_correct}")
+
+    # ── 3) Generic arithmetic pattern ─────────────────────────────
+    # matches any-length LHS expression = integer RHS
+    pat_num = re.compile(r'([\d+\-*/()\s]+)\s*=\s*(-?\d+)')
+    for m in pat_num.finditer(full_text):
+        orig_eq = m.group(0).strip()
+        lhs_str = m.group(1)
+        c_str   = m.group(2)
+
+        # skip if it was already handled by pat_lin
+        if pat_lin.match(orig_eq):
+            continue
+
+        # evaluate LHS
         try:
             expected = eval(lhs_str)
         except Exception:
             continue
 
-        # correctness check (float tolerance for division)
+        # parse RHS
+        c = int(c_str)
+        # compare (allow float tolerance)
         if isinstance(expected, float):
             is_correct = abs(expected - c) < 1e-9
         else:
             is_correct = (expected == c)
 
-        # collect structured result
         assessments.append({
             "text":       orig_eq,
+            "type":       "arithmetic",
             "expression": lhs_str,
             "result":     c,
             "is_correct": is_correct
         })
-
-        # build formatted line
         mark = "✅" if is_correct else "❌"
         lines.append(f"{orig_eq} → {mark} {is_correct}")
 
@@ -120,5 +152,4 @@ async def upload_assessment(file: UploadFile = File(...)):
         f.write(data)
 
     # assess equations directly from bytes
-    result = assess_pdf_bytes(data)
-    return result
+    return assess_pdf_bytes(data)
