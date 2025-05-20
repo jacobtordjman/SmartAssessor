@@ -5,3 +5,6 @@ uvicorn backend.app.main:app --reload
 fronfend:
 cd backend
 npm run dev
+
+
+.
