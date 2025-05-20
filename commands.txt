@@ -2,3 +2,5 @@ source env/Scripts/activate
 uvicorn app.main:app --reload
 
 npm run dev
+
+trying
