@@ -78,6 +78,21 @@ button:focus-visible {
   }
 }
 
+.card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .card-row {
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #1e293b;
