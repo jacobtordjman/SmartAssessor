@@ -1,7 +1,28 @@
-backend:
+__backend__:
+
+for windows:
 .venv/Scripts/activate
+
+for mac:
+.venv/bin/activate
+
 uvicorn backend.app.main:app --reload
 
-frontend:
+
+__frontend__:
 cd frontend
 npm run dev
+
+
+___Git__
+
+push:
+
+git add .
+git commit -m "massage"
+git push
+
+
+pull:
+
+git pull origin main
