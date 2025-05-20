@@ -13,13 +13,11 @@ export default function FileUploadAssessment() {
     formData.append("file", file);
 
     try {
-      // Adjust the URL if your backend is hosted elsewhere
       const response = await axios.post("http://127.0.0.1:8000/upload/assessment", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const { assessments } = response.data;
       if (assessments && assessments.length > 0) {
-        // Turn the array of objects into a readable string:
         const lines = assessments.map(a =>
           `${a.text} → ${a.is_correct ? "✅ true" : "❌ false"}`
         );
@@ -34,17 +32,15 @@ export default function FileUploadAssessment() {
     }
   };
 
-  // Configure react-dropzone
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
-    noClick: true, // prevent the entire area from triggering the file dialog on click
-    noKeyboard: true // prevent ENTER/SPACE from triggering the file dialog
+    noClick: true,
+    noKeyboard: true
   });
 
   return (
-    <div className="p-4 border-dashed border-2 border-gray-400 rounded-md">
-      {/* The Drop Area */}
-      <div {...getRootProps()} className="cursor-pointer py-10 text-center">
+    <div className="p-6 border-4 border-dashed border-indigo-300 rounded-2xl bg-indigo-50 hover:bg-indigo-100 transition-colors">
+      <div {...getRootProps()} className="cursor-pointer py-12 text-center text-indigo-700 font-medium">
         <input {...getInputProps()} />
         {isDragActive ? (
           <p>Drop the file here...</p>
@@ -53,28 +49,26 @@ export default function FileUploadAssessment() {
         )}
       </div>
 
-      {/* A dedicated button to open the file dialog */}
-      <div className="flex justify-center mt-2">
+      <div className="flex justify-center mt-4">
         <button
           type="button"
           onClick={open}
-          className="bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition-transform hover:scale-105"
         >
           Choose File
         </button>
       </div>
 
-      {/* Display extracted text or error */}
       {feedback && (
-        <div className="mt-4 p-4 bg-gray-100 rounded shadow">
-          <h3 className="font-bold mb-2">Extracted Text:</h3>
+        <div className="mt-6 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+          <h3 className="font-semibold text-indigo-800 mb-2 text-lg">Results Overview:</h3>
           <pre className="text-gray-700 whitespace-pre-wrap">
-          {feedback}
-          </pre>       
+            {feedback}
+          </pre>
         </div>
       )}
       {errorMessage && (
-        <div className="mt-4 text-red-500">
+        <div className="mt-4 text-red-500 font-medium">
           <p>{errorMessage}</p>
         </div>
       )}
