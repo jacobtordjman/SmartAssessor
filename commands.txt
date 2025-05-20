@@ -2,9 +2,6 @@ backend:
 .venv/Scripts/activate
 uvicorn backend.app.main:app --reload
 
-fronfend:
-cd backend
+frontend:
+cd frontend
 npm run dev
-
-
-.
