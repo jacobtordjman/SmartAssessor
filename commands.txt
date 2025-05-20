@@ -1,6 +1,7 @@
 backend:
-source env/Scripts/activate
-uvicorn app.main:app --reload
+.venv/Scripts/activate
+uvicorn backend.app.main:app --reload
 
 fronfend:
+cd backend
 npm run dev
