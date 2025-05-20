@@ -2,6 +2,7 @@ import brainIcon from "../assets/brain.png";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
+import UploadBox from "./Uploadbox";
 
 export default function Home() {
   const [feedback, setFeedback] = useState("");
@@ -39,53 +40,43 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col items-center justify-start p-6 relative overflow-hidden text-center">
-      {/* Decorative gradient blur background circle */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-300 opacity-30 rounded-full filter blur-3xl animate-pulse"></div>
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-pink-300 opacity-30 rounded-full filter blur-3xl animate-pulse"></div>
 
-      <div className="z-10 max-w-4xl w-full">
-        <img
-          src={brainIcon}
-          alt="Smart Assessor Logo"
-          style={{ width: "150px", height: "150px" }}
-          className="mx-auto mb-3"
-        />
-        <h1 className="text-5xl font-extrabold text-indigo-700 mb-4 drop-shadow-lg animate-pulse">
-          Smart Assessor
-        </h1>
+      <div className="z-10 max-w-6xl w-full">
+        <img src={brainIcon} alt="Smart Assessor Logo" style={{ width: "120px", height: "120px" }} className="mx-auto mb-2" />
+        <h1 className="text-5xl font-extrabold text-indigo-700 mb-4 drop-shadow-lg animate-pulse">Smart Assessor</h1>
         <p className="text-lg text-gray-700 mb-12">
           Learning adventures await! Upload your PDF and let the fun begin.
         </p>
 
         <div className="card-row mb-16">
-          <div className="rounded-xl bg-white/80 backdrop-blur p-6 shadow hover:scale-105 transition max-w-xs border border-indigo-200 mx-auto">
-            <div className="mb-3 w-12 h-12 flex items-center justify-center rounded-lg bg-gradient-to-tr from-purple-400 to-indigo-500">
-              <span className="text-white text-xl">📖</span>
+          <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 w-full max-w-sm mx-auto hover:scale-105 transition-all">
+            <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-3xl shadow-md">
+              📖
             </div>
-            <h3 className="text-xl font-bold mb-1">Explore & Learn</h3>
-            <p className="text-sm text-gray-700">
+            <h3 className="text-xl font-bold mb-2 text-indigo-800">Explore & Learn</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Dive into documents with tools that make learning interactive and engaging.
             </p>
           </div>
 
-          <div className="rounded-xl bg-white/80 backdrop-blur p-6 shadow hover:scale-105 transition max-w-xs border border-indigo-200 mx-auto"
-
->
-            <div className="mb-3 w-12 h-12 flex items-center justify-center rounded-lg bg-gradient-to-tr from-yellow-400 to-orange-500">
-              <span className="text-white text-xl">✨</span>
+          <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 w-full max-w-sm mx-auto hover:scale-105 transition-all">
+            <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white text-3xl shadow-md">
+              ✨
             </div>
-            <h3 className="text-xl font-bold mb-1">Spark Curiosity</h3>
-            <p className="text-sm text-gray-700">
+            <h3 className="text-xl font-bold mb-2 text-indigo-800">Spark Curiosity</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Unlock insights and connect ideas with AI-powered discovery features.
             </p>
           </div>
 
-          <div className="rounded-xl bg-white/80 backdrop-blur p-6 shadow hover:scale-105 transition max-w-xs border border-indigo-200 mx-auto">
-            <div className="mb-3 w-12 h-12 flex items-center justify-center rounded-lg bg-gradient-to-tr from-green-400 to-teal-500">
-              <span className="text-white text-xl">🎖️</span>
+          <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 w-full max-w-sm mx-auto hover:scale-105 transition-all">
+            <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-3xl shadow-md">
+              🎖️
             </div>
-            <h3 className="text-xl font-bold mb-1">Celebrate Wins</h3>
-            <p className="text-sm text-gray-700">
+            <h3 className="text-xl font-bold mb-2 text-indigo-800">Celebrate Wins</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Track your learning journey and earn cool badges for your achievements.
             </p>
           </div>
@@ -97,6 +88,7 @@ export default function Home() {
               <input {...getInputProps()} />
               {isDragActive ? (
                 <p>Drop the file here...</p>
+              
               ) : (
                 <p>Drag a PDF file here, or use the button below to upload.</p>
               )}
