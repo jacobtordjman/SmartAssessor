@@ -60,6 +60,7 @@ export default function Home() {
               Dive into documents with tools that make learning interactive and engaging.
             </p>
           </div>
+          
 
           <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 w-full max-w-sm mx-auto hover:scale-105 transition-all">
             <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white text-3xl shadow-md">
