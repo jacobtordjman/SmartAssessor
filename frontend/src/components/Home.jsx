@@ -2,7 +2,7 @@ import brainIcon from "../assets/brain.png";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
-import UploadBox from "./Uploadbox";
+
 
 export default function Home() {
   const [feedback, setFeedback] = useState("");
