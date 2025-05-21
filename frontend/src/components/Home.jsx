@@ -8,27 +8,39 @@ export default function Home() {
   const [feedback, setFeedback] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const onDrop = async (acceptedFiles) => {
-    if (acceptedFiles.length === 0) return;
-    const file = acceptedFiles[0];
+    const onDrop = async (accepted) => {
+    if (accepted.length === 0) return;
+    const file = accepted[0];
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/upload/assessment", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const { assessments } = response.data;
-      if (assessments && assessments.length > 0) {
-        const lines = assessments.map(a => `${a.text} → ${a.is_correct ? "✅ true" : "❌ false"}`);
+      const res = await axios.post(
+        "http://127.0.0.1:8000/upload/assessment",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      console.log("Backend JSON:", res.data);
+
+      const { evaluation } = res.data;
+
+      // If the backend ever switches to objects, handle both shapes
+      if (Array.isArray(evaluation)) {
+        const lines = evaluation.map(
+          (a) => `${a.text} → ${a.is_correct ? "✅ true" : "❌ false"}`
+        );
         setFeedback(lines.join("\n"));
-        setErrorMessage("");
+      } else if (typeof evaluation === "string" && evaluation.trim()) {
+        setFeedback(evaluation);
       } else {
-        setErrorMessage("No equations found or extraction failed.");
+        setErrorMessage("No evaluation returned from server.");
+        setFeedback("");
       }
-    } catch (error) {
-      console.error("Upload error:", error);
+    } catch (err) {
+      console.error("Upload error:", err);
       setErrorMessage("An error occurred during upload.");
+      setFeedback("");
     }
   };
 
