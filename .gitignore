@@ -1,0 +1,20 @@
+# ─── Python virtualenv ─────────────────────────────────────────────────────────
+/backend/env/
+
+# ─── LLM weights ───────────────────────────────────────────────────────────────
+/backend/app/models/
+
+# ─── Backend uploads & secrets ────────────────────────────────────────────────
+/backend/uploads/
+/backend/.env
+/backend/gcp-vertex-key.json
+
+# ─── Bytecode & caches ─────────────────────────────────────────────────────────
+**/__pycache__/
+**/*.py[cod]
+
+# ─── Frontend build & deps ─────────────────────────────────────────────────────
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+/frontend/.env

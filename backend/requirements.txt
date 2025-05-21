@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+PyPDF2
+python-dotenv
+gpt4all
+transformers

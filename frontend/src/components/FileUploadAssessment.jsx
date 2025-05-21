@@ -1,3 +1,5 @@
+// frontend/src/components/FileUploadAssessment.jsx
+
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
@@ -13,47 +15,47 @@ export default function FileUploadAssessment() {
     formData.append("file", file);
 
     try {
-      // Adjust the URL if your backend is hosted elsewhere
-      const response = await axios.post("http://127.0.0.1:8000/upload/assessment", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const { assessments } = response.data;
-      if (assessments && assessments.length > 0) {
-        // Turn the array of objects into a readable string:
-        const lines = assessments.map(a =>
-          `${a.text} → ${a.is_correct ? "✅ true" : "❌ false"}`
-        );
-        setFeedback(lines.join("\n"));
+      const response = await axios.post(
+        "http://127.0.0.1:8000/upload/assessment",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      console.log("Backend JSON:", response.data);
+
+      const { evaluation } = response.data;
+      if (evaluation && evaluation.trim()) {
+        setFeedback(evaluation);
         setErrorMessage("");
       } else {
-        setErrorMessage("No equations found or extraction failed.");
+        setErrorMessage("No evaluation returned from server.");
+        setFeedback("");
       }
     } catch (error) {
       console.error("Upload error:", error);
       setErrorMessage("An error occurred during upload.");
+      setFeedback("");
     }
   };
 
-  // Configure react-dropzone
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    onDrop,
-    noClick: true, // prevent the entire area from triggering the file dialog on click
-    noKeyboard: true // prevent ENTER/SPACE from triggering the file dialog
-  });
+  const { getRootProps, getInputProps, isDragActive, open } =
+    useDropzone({
+      onDrop,
+      noClick: true,
+      noKeyboard: true,
+    });
 
   return (
     <div className="p-4 border-dashed border-2 border-gray-400 rounded-md">
-      {/* The Drop Area */}
       <div {...getRootProps()} className="cursor-pointer py-10 text-center">
         <input {...getInputProps()} />
         {isDragActive ? (
-          <p>Drop the file here...</p>
+          <p>Drop the PDF here...</p>
         ) : (
           <p>Drag a PDF file here, or use the button below to upload.</p>
         )}
       </div>
 
-      {/* A dedicated button to open the file dialog */}
       <div className="flex justify-center mt-2">
         <button
           type="button"
@@ -64,15 +66,13 @@ export default function FileUploadAssessment() {
         </button>
       </div>
 
-      {/* Display extracted text or error */}
       {feedback && (
         <div className="mt-4 p-4 bg-gray-100 rounded shadow">
-          <h3 className="font-bold mb-2">Extracted Text:</h3>
-          <pre className="text-gray-700 whitespace-pre-wrap">
-          {feedback}
-          </pre>       
+          <h3 className="font-bold mb-2">Evaluation:</h3>
+          <pre className="text-gray-700 whitespace-pre-wrap">{feedback}</pre>
         </div>
       )}
+
       {errorMessage && (
         <div className="mt-4 text-red-500">
           <p>{errorMessage}</p>

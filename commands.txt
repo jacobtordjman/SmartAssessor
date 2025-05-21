@@ -1,6 +1,5 @@
-source env/Scripts/activate
-uvicorn app.main:app --reload
+source backend/env/Scripts/activate
+pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload
 
 npm run dev
-
-trying
