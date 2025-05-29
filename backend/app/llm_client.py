@@ -6,7 +6,7 @@ class LocalLLM:
     def __init__(self):
         base_dir = Path(__file__).parent
         models_dir = base_dir / "models"
-        model_file = "llama-2-7b-chat.gguf"
+        model_file = "wizardmath33.gguf"
         model_path = models_dir / model_file
 
         print(f"Loading GPT4All model from {model_path} ...")
