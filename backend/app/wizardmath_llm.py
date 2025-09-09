@@ -377,10 +377,19 @@ class WizardMathLLM:
         assert self.model is not None, "Model not loaded"
         
         # System prompt for mathematical problem solving
-        system_prompt = """You are an expert in linear algebra. Provide a clear, step-by-step derivation.
-### Problem:
-{question}
-### Solution:"""
+        system_prompt = (
+"You are a linear algebra expert. For each problem I give you:"
+
+"Solve the problem independently."
+
+"Compare your solution to the answer provided with the problem."
+
+"Respond based on the comparison:"
+
+"If the provided answer is correct, reply with: Correct ✅"
+
+"If the provided answer is incorrect, reply with: Incorrect ❌, followed by the correct answer and a brief flow of your solution."
+        )
         
         prompt = system_prompt.format(question=question.strip())
         
