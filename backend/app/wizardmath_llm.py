@@ -533,20 +533,23 @@ class WizardMathLLM:
             return self._fallback_assessment(student_blob)
         
         # Extract questions and answers from the blob
-        lines = student_blob.strip().split('\n')
+        # Normalize whitespace to improve PDF-extracted text parsing
+        norm = re.sub(r"\r", "\n", student_blob)
+        norm = re.sub(r"\n+", "\n", norm)  # collapse multiple blank lines
+        lines = [ln.strip() for ln in norm.strip().split('\n')]
         responses = []
-        
+
         current_question = ""
         current_answer = ""
         question_num = 1
-        
+
         for line in lines:
             line = line.strip()
             if not line:
                 continue
                 
             # Look for question patterns
-            if any(keyword in line.lower() for keyword in ['problem', 'question', 'compute', 'find', 'solve']):
+            if self._looks_like_question_start(line):
                 # If we have a previous question/answer pair, process it
                 if current_question and current_answer:
                     try:
@@ -592,6 +595,26 @@ class WizardMathLLM:
             torch.cuda.empty_cache()
         
         return "\n".join(responses) if responses else "No questions found in submission."
+
+    def _looks_like_question_start(self, line: str) -> bool:
+        """Heuristic to detect the start of a new problem in plain text.
+        Handles common formats from PDF extraction: 'Q1', 'Question 1', 'Problem 2', '1.)', '(3)',
+        or imperative forms like 'Compute/Find/Solve ...'.
+        """
+        l = line.strip().lower()
+        # Obvious keywords
+        if l.startswith("compute ") or l.startswith("find ") or l.startswith("solve "):
+            return True
+        # Patterns like 'question 1', 'problem 2'
+        if re.match(r"^(question|problem)\s*\d+[:.)\-]?\s*", l):
+            return True
+        # Numbered list styles: '1.', '1)', '(1)', '1 -'
+        if re.match(r"^\(?\d+\)?[.)\-]\s+", l):
+            return True
+        # Fallback: line contains 'question' or 'problem' anywhere
+        if "question" in l or "problem" in l:
+            return True
+        return False
     
     def _fallback_assessment(self, student_blob: str) -> str:
         """
@@ -604,8 +627,12 @@ class WizardMathLLM:
             processed_problems = set()  # Track which problems we've already processed
             
             for i, line in enumerate(lines):
-                # Look for explicit problem statements with numbers (e.g., "Problem 1", "Problem 2")
-                problem_match = re.search(r'(?:problem|question)\s*(\d+)', line.lower())
+                l = line.lower()
+                # Look for explicit problem statements with numbers ("Problem 1", "Question 2", "Q3")
+                problem_match = (
+                    re.search(r'(?:problem|question|q)\s*(\d+)', l)
+                    or re.search(r'^\(?\s*(\d+)\s*\)?[.)\-]\s*', l)  # 1.  or (2) or 3)
+                )
                 
                 if problem_match:
                     problem_num = problem_match.group(1)
@@ -618,7 +645,7 @@ class WizardMathLLM:
                     
                     # Look for numerical answers in the following lines (within reasonable distance)
                     answer_found = False
-                    for j in range(i + 1, min(i + 20, len(lines))):
+                    for j in range(i + 1, min(i + 40, len(lines))):
                         answer_line = lines[j]
                         
                         # Look for patterns like "= number" or "answer: number" or just standalone numbers
@@ -654,7 +681,7 @@ class WizardMathLLM:
                             break
                     
                     # Only mention if we found a clear problem but no answer
-                    if not answer_found and ('determinant' in line.lower() or 'matrix' in line.lower()):
+                    if not answer_found and ('determinant' in l or 'matrix' in l or 'compute' in l or 'find' in l or 'solve' in l):
                         responses.append(f"Problem {problem_num}: Found but no clear numerical answer detected")
             
             if not responses:
