@@ -11,7 +11,8 @@ class LocalLLM:
     def __init__(self):
         print("Initializing LocalLLM with WizardMath backend...")
         # Initialize the WizardMath model in force AI mode for full capabilities
-        self.wizardmath = WizardMathLLM(force_ai_mode=True)
+        # Allow remote downloads on fresh environments (e.g., Colab)
+        self.wizardmath = WizardMathLLM(force_ai_mode=True, use_local_cache=False)
         print("✅ LocalLLM (WizardMath) loaded successfully.")
 
     def chat(self, student_blob: str) -> str:

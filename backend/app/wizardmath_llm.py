@@ -209,11 +209,20 @@ class WizardMathLLM:
         try:
             # Load tokenizer with minimal configuration
             print("Loading tokenizer with optimization...")
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                self.base_model,
-                use_fast=True,  # Use fast tokenizer for memory efficiency
-                local_files_only=self.use_local_cache
-            )
+            # Prefer remote download unless explicitly in offline mode.
+            # Previous behavior forced local-only when use_local_cache=True,
+            # which breaks fresh Colab sessions without a cached model.
+            offline_flag = bool(os.getenv("HF_HUB_OFFLINE") or os.getenv("TRANSFORMERS_OFFLINE"))
+            try:
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    self.base_model,
+                    use_fast=True,  # Use fast tokenizer for memory efficiency
+                    local_files_only=offline_flag
+                )
+            except Exception as e:
+                # Surface a clear message and re-raise so callers can handle it
+                print(f"Tokenizer load failed (offline={offline_flag}): {str(e)}")
+                raise
             
             # Ensure tokenizer has a pad token
             if self.tokenizer and self.tokenizer.pad_token is None:
