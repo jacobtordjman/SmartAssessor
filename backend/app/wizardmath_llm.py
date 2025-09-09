@@ -6,6 +6,8 @@ for mathematical problem solving and assessment.
 """
 
 import os
+import sys
+import platform
 import torch
 import json
 import re
@@ -45,6 +47,8 @@ class WizardMathLLM:
         self.use_local_cache = use_local_cache
         self.lightweight_mode = lightweight_mode
         self.force_ai_mode = force_ai_mode
+        # Detect offline mode via env flags
+        self.offline_flag = bool(os.getenv("HF_HUB_OFFLINE") or os.getenv("TRANSFORMERS_OFFLINE"))
         
         # Set default adapter path if not provided
         if adapter_path is None:
@@ -60,6 +64,10 @@ class WizardMathLLM:
         print(f"Use local cache: {self.use_local_cache}")
         print(f"Lightweight mode: {self.lightweight_mode}")
         print(f"Force AI mode: {self.force_ai_mode}")
+        print(f"HF offline flag: {self.offline_flag}")
+
+        # Log environment and system details once at init
+        self._log_system_info()
         
         # Initialize model components
         self.tokenizer: Optional[PreTrainedTokenizer] = None
@@ -142,12 +150,23 @@ class WizardMathLLM:
         """Load the tokenizer and model with LoRA adapters."""
         try:
             # Load tokenizer
-            print("Loading tokenizer...")
-            self.tokenizer = AutoTokenizer.from_pretrained(self.base_model)
+            print("Loading tokenizer (standard path)...")
+            print(f"AutoTokenizer.from_pretrained(base_model='{self.base_model}', offline={self.offline_flag})")
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.base_model,
+                use_fast=True,
+                local_files_only=self.offline_flag
+            )
             
             # Ensure tokenizer has a pad token
             if self.tokenizer and self.tokenizer.pad_token is None:  # type: ignore
                 self.tokenizer.pad_token = self.tokenizer.eos_token  # type: ignore
+            try:
+                vocab = getattr(self.tokenizer, 'vocab_size', None)
+                max_len = getattr(self.tokenizer, 'model_max_length', None)
+                print(f"Tokenizer loaded. vocab_size={vocab}, model_max_length={max_len}")
+            except Exception:
+                pass
             
             # Configure quantization based on device availability
             if self.device == "cuda":
@@ -165,7 +184,7 @@ class WizardMathLLM:
                 torch_dtype = torch.float32
             
             # Load base model with appropriate configuration
-            print(f"Loading base model on {self.device}...")
+            print(f"Loading base model on {self.device} (standard path)...")
             if bnb_config is not None:
                 base_model = AutoModelForCausalLM.from_pretrained(
                     self.base_model,
@@ -184,6 +203,7 @@ class WizardMathLLM:
             
             # Load LoRA adapters
             print("Attaching LoRA adapters...")
+            print(f"Adapter path exists: {Path(self.adapter_path).exists()} at '{self.adapter_path}'")
             self.model = PeftModel.from_pretrained(base_model, self.adapter_path)
             
             # Move to device if not using device_map
@@ -196,7 +216,7 @@ class WizardMathLLM:
             print("✅ WizardMath model loaded successfully!")
             
         except Exception as e:
-            print(f"❌ Error loading WizardMath model: {str(e)}")
+            print(f"❌ Error loading WizardMath model: {e.__class__.__name__}: {str(e)}")
             # Reset to None on error
             self.tokenizer = None
             self.model = None
@@ -212,16 +232,22 @@ class WizardMathLLM:
             # Prefer remote download unless explicitly in offline mode.
             # Previous behavior forced local-only when use_local_cache=True,
             # which breaks fresh Colab sessions without a cached model.
-            offline_flag = bool(os.getenv("HF_HUB_OFFLINE") or os.getenv("TRANSFORMERS_OFFLINE"))
+            print(f"AutoTokenizer.from_pretrained(base_model='{self.base_model}', offline={self.offline_flag}, use_fast=True)")
             try:
                 self.tokenizer = AutoTokenizer.from_pretrained(
                     self.base_model,
                     use_fast=True,  # Use fast tokenizer for memory efficiency
-                    local_files_only=offline_flag
+                    local_files_only=self.offline_flag
                 )
+                try:
+                    vocab = getattr(self.tokenizer, 'vocab_size', None)
+                    max_len = getattr(self.tokenizer, 'model_max_length', None)
+                    print(f"Tokenizer loaded. vocab_size={vocab}, model_max_length={max_len}")
+                except Exception:
+                    pass
             except Exception as e:
                 # Surface a clear message and re-raise so callers can handle it
-                print(f"Tokenizer load failed (offline={offline_flag}): {str(e)}")
+                print(f"Tokenizer load failed (offline={self.offline_flag}): {e.__class__.__name__}: {str(e)}")
                 raise
             
             # Ensure tokenizer has a pad token
@@ -246,6 +272,7 @@ class WizardMathLLM:
             
             # Load base model with aggressive optimization
             print(f"Loading base model on {self.device} with optimizations...")
+            print(f"from_pretrained(base_model='{self.base_model}', quantized={bnb_config is not None}, device_map={device_map}, dtype={torch_dtype}, trust_remote_code=True, low_cpu_mem_usage=True)")
             if bnb_config is not None:
                 base_model = AutoModelForCausalLM.from_pretrained(
                     self.base_model,
@@ -269,6 +296,7 @@ class WizardMathLLM:
             
             # Load LoRA adapters
             print("Attaching LoRA adapters...")
+            print(f"Adapter path exists: {Path(self.adapter_path).exists()} at '{self.adapter_path}'")
             self.model = PeftModel.from_pretrained(
                 base_model, 
                 self.adapter_path,
@@ -289,7 +317,7 @@ class WizardMathLLM:
             print("✅ WizardMath model loaded successfully with optimizations!")
             
         except Exception as e:
-            print(f"❌ Error loading optimized WizardMath model: {str(e)}")
+            print(f"❌ Error loading optimized WizardMath model: {e.__class__.__name__}: {str(e)}")
             # Reset to None on error
             self.tokenizer = None
             self.model = None
@@ -634,6 +662,50 @@ class WizardMathLLM:
             return f"{result_text}\n\n📋 Assessment completed using mathematical expression detection."
         else:
             return "📋 No clear mathematical problems with numerical answers found.\n\n📊 System Status: Running in lightweight assessment mode."
+
+    def _log_system_info(self) -> None:
+        """Print system and environment info to help debug in Colab/servers."""
+        try:
+            import transformers as _tf
+            try:
+                import peft as _peft
+                peft_ver = getattr(_peft, '__version__', 'unknown')
+            except Exception:
+                peft_ver = 'unavailable'
+            print("=== System Info ===")
+            print(f"Python: {sys.version.split()[0]} on {platform.platform()}")
+            print(f"Torch: {torch.__version__}, CUDA available: {torch.cuda.is_available()}")
+            if torch.cuda.is_available():
+                try:
+                    count = torch.cuda.device_count()
+                    print(f"CUDA devices: {count}")
+                    for i in range(count):
+                        props = torch.cuda.get_device_properties(i)
+                        total_gb = props.total_memory / (1024**3)
+                        print(f" - GPU[{i}]: {props.name}, VRAM={total_gb:.1f}GB")
+                except Exception as _:
+                    pass
+            print(f"Transformers: {getattr(_tf, '__version__', 'unknown')}, PEFT: {peft_ver}")
+            print(f"HF_HUB_OFFLINE={os.getenv('HF_HUB_OFFLINE')}, TRANSFORMERS_OFFLINE={os.getenv('TRANSFORMERS_OFFLINE')}")
+            print(f"HF_HOME={os.getenv('HF_HOME')}, TORCH_HOME={os.getenv('TORCH_HOME')}")
+            try:
+                import shutil
+                _, _, free_bytes = shutil.disk_usage(Path.home())
+                print(f"Disk free at HOME: {free_bytes/(1024**3):.1f}GB")
+            except Exception:
+                pass
+            exists = Path(self.adapter_path).exists()
+            print(f"Adapter path exists: {exists} at '{self.adapter_path}'")
+            if exists:
+                try:
+                    entries = list(Path(self.adapter_path).iterdir())[:10]
+                    names = [e.name for e in entries]
+                    print(f"Adapter dir entries (first 10): {names}")
+                except Exception:
+                    pass
+            print("===================")
+        except Exception:
+            pass
     
     def _validate_basic_math(self, expression: str, result: str) -> Dict[str, Any]:
         """

@@ -26,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=_allow_credentials,
 )
+print(f"[Startup] CORS allow_origins={_allow_origins} allow_credentials={_allow_credentials}")
 
 def extract_text_from_pdf(data: bytes) -> str:
     reader = PyPDF2.PdfReader(BytesIO(data))
@@ -53,6 +54,10 @@ async def upload_assessment(file: UploadFile = File(...)):
         if file.content_type != "application/pdf":
             raise HTTPException(400, "Only PDF files allowed.")
         data = await file.read()
+        try:
+            print(f"[Backend] Received file: name={getattr(file, 'filename', 'unknown')} size={len(data)} bytes content_type={file.content_type}")
+        except Exception:
+            pass
 
         student_text = extract_text_from_pdf(data)
         print(f"[Backend] Extracted text (first 200 chars):\n{student_text[:200]!r}")
@@ -69,7 +74,7 @@ async def upload_assessment(file: UploadFile = File(...)):
                 print(f"[Backend] Feedback for chunk {idx}:\n{fb[:200]!r}")
                 feedbacks.append(fb)
             except Exception as chat_error:
-                print(f"[Backend] Error in llm.chat for chunk {idx}: {str(chat_error)}")
+                print(f"[Backend] Error in llm.chat for chunk {idx}: {chat_error.__class__.__name__}: {str(chat_error)}")
                 feedbacks.append(f"Error processing chunk {idx}: {str(chat_error)}")
 
         combined_feedback = "\n\n".join(feedbacks)
@@ -80,8 +85,7 @@ async def upload_assessment(file: UploadFile = File(...)):
         return response
     
     except Exception as e:
-        print(f"[Backend] UPLOAD ERROR: {str(e)}")
-        print(f"[Backend] Error type: {type(e).__name__}")
+        print(f"[Backend] UPLOAD ERROR: {type(e).__name__}: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(500, f"Internal server error: {str(e)}")
