@@ -42,7 +42,17 @@ class WizardMathLLM:
             force_ai_mode: If True, force AI model loading regardless of resource constraints.
         """
         # Configuration
-        self.base_model = "WizardLMTeam/WizardMath-7B-V1.1"
+        default_base = "WizardLMTeam/WizardMath-7B-V1.1"
+        # Allow overriding the base model with a local path (e.g., Google Drive)
+        env_base = os.getenv("BASE_MODEL_PATH") or os.getenv("WIZARD_BASE_MODEL")
+        # Auto-detect common Google Drive path when available
+        drive_default_base = "/content/drive/MyDrive/models/WizardMath-7B-V1.1"
+        if env_base:
+            self.base_model = env_base
+        elif Path(drive_default_base).exists():
+            self.base_model = drive_default_base
+        else:
+            self.base_model = default_base
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.use_local_cache = use_local_cache
         self.lightweight_mode = lightweight_mode
@@ -52,8 +62,18 @@ class WizardMathLLM:
         
         # Set default adapter path if not provided
         if adapter_path is None:
-            base_dir = Path(__file__).parent.parent.parent
-            self.adapter_path = str(base_dir / "wizardmath-lora-checkpoints")
+            # Allow overriding adapter path via env (e.g., Drive)
+            env_adapter = os.getenv("ADAPTER_PATH")
+            if env_adapter:
+                self.adapter_path = env_adapter
+            else:
+                # Prefer Drive default if it exists
+                drive_default_adapter = "/content/drive/MyDrive/SmartAssessor/wizardmath-lora-checkpoints"
+                if Path(drive_default_adapter).exists():
+                    self.adapter_path = drive_default_adapter
+                else:
+                    base_dir = Path(__file__).parent.parent.parent
+                    self.adapter_path = str(base_dir / "wizardmath-lora-checkpoints")
         else:
             self.adapter_path = adapter_path
             
@@ -66,6 +86,9 @@ class WizardMathLLM:
         print(f"Force AI mode: {self.force_ai_mode}")
         print(f"HF offline flag: {self.offline_flag}")
 
+        # Track if base path is a local directory (e.g., Drive)
+        self._base_is_local_dir = Path(self.base_model).exists()
+
         # Log environment and system details once at init
         self._log_system_info()
         
@@ -74,6 +97,13 @@ class WizardMathLLM:
         self.model: Optional[Union[PreTrainedModel, PeftModel]] = None
         self.model_loaded = False
         
+        # If offline is requested but base path is not present, fail fast with guidance
+        if self.offline_flag and not self._base_is_local_dir:
+            print(f"❌ Offline mode set, but base model directory not found: {self.base_model}")
+            raise FileNotFoundError(
+                f"BASE_MODEL_PATH missing: {self.base_model}. Mount Drive or set BASE_MODEL_PATH to your local model directory."
+            )
+
         # Force AI mode overrides lightweight detection
         if self.force_ai_mode:
             print("🚀 Force AI mode enabled - loading WizardMath model regardless of resources...")
@@ -155,7 +185,7 @@ class WizardMathLLM:
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.base_model,
                 use_fast=True,
-                local_files_only=self.offline_flag
+                local_files_only=(self.offline_flag or self._base_is_local_dir)
             )
             
             # Ensure tokenizer has a pad token
@@ -191,14 +221,16 @@ class WizardMathLLM:
                     quantization_config=bnb_config,
                     device_map=device_map,
                     torch_dtype=torch_dtype,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    local_files_only=(self.offline_flag or self._base_is_local_dir)
                 )
             else:
                 base_model = AutoModelForCausalLM.from_pretrained(
                     self.base_model,
                     torch_dtype=torch_dtype,
                     trust_remote_code=True,
-                    low_cpu_mem_usage=True  # Help with CPU memory management
+                    low_cpu_mem_usage=True,  # Help with CPU memory management
+                    local_files_only=(self.offline_flag or self._base_is_local_dir)
                 )
             
             # Load LoRA adapters
@@ -237,7 +269,7 @@ class WizardMathLLM:
                 self.tokenizer = AutoTokenizer.from_pretrained(
                     self.base_model,
                     use_fast=True,  # Use fast tokenizer for memory efficiency
-                    local_files_only=self.offline_flag
+                    local_files_only=(self.offline_flag or self._base_is_local_dir)
                 )
                 try:
                     vocab = getattr(self.tokenizer, 'vocab_size', None)
@@ -281,6 +313,7 @@ class WizardMathLLM:
                     torch_dtype=torch_dtype,
                     trust_remote_code=True,
                     low_cpu_mem_usage=True,
+                    local_files_only=(self.offline_flag or self._base_is_local_dir),
                     offload_folder="offload" if self.device == "cpu" else None  # Offload if needed
                 )
             else:
@@ -289,6 +322,7 @@ class WizardMathLLM:
                     torch_dtype=torch_dtype,
                     trust_remote_code=True,
                     low_cpu_mem_usage=True,
+                    local_files_only=(self.offline_flag or self._base_is_local_dir),
                     # Add CPU-specific optimizations
                     use_cache=True,
                     torchscript=False
