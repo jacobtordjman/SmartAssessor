@@ -2,19 +2,29 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import PyPDF2, unicodedata
 from io import BytesIO
+import os
 
 from backend.app.llm_client import llm
 
 app = FastAPI()
+
+# Configure CORS to work locally and on Pages
+# Use env var ALLOWED_ORIGINS=comma,separated,origins for strict mode.
+# Default to wildcard when not set (and disable credentials in that case).
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
+if allowed_origins_env.strip() in ("", "*"):
+    _allow_origins = ["*"]
+    _allow_credentials = False  # star origin requires credentials disabled
+else:
+    _allow_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+    _allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        ],
+    allow_origins=_allow_origins,
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True,
+    allow_credentials=_allow_credentials,
 )
 
 def extract_text_from_pdf(data: bytes) -> str:

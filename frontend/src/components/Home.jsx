@@ -3,6 +3,17 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 
+// Determine API base URL in this order:
+// 1) Vite env var VITE_API_BASE at build time
+// 2) window.API_BASE from public/config.js at runtime
+// 3) localStorage value 'API_BASE' (user-configurable without rebuild)
+// 4) Fallback to local dev server
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  (typeof window !== "undefined" && window.API_BASE) ||
+  (typeof localStorage !== "undefined" && localStorage.getItem("API_BASE")) ||
+  "http://127.0.0.1:8000";
+
 
 export default function Home() {
   const [feedback, setFeedback] = useState("");
@@ -16,7 +27,7 @@ export default function Home() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/upload/assessment",
+        `${API_BASE}/upload/assessment`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
