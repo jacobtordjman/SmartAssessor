@@ -2,10 +2,5 @@ fastapi
 uvicorn
 PyPDF2
 python-dotenv
-gpt4all
-transformers>=4.35.0
-torch>=2.0.0
-peft>=0.6.0
-bitsandbytes
-accelerate
-datasets
+google-cloud-firestore
+google-auth
